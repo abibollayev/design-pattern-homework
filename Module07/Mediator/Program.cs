@@ -48,3 +48,78 @@
         }
     }
 }
+
+public class User
+{
+    public string Name { get; }
+    private IMediator _mediator;
+    public User(string name) => Name = name;
+    public void SetMediator(IMediator mediator) => _mediator = mediator;
+    public void Send(string message) => _mediator?.SendMessage(message, this);
+    public void SendPrivate(string message, string toName) => _mediator?.SendPrivate(message, this, toName);
+    public void Receive(string message, string from) => Console.WriteLine($"{Name} received from {from}: {message}");
+    public void ReceivePrivate(string message, string from) => Console.WriteLine($"{Name} private from {from}: {message}");
+    public void ReceiveSystem(string note) => Console.WriteLine($"{Name} system: {note}");
+}
+
+public static class Program
+{
+    public static void Main()
+    {
+        var invoker = new Invoker();
+
+
+        var livingLight = new Light("living room");
+        var door = new Door("front");
+        var thermostat = new Thermostat(20);
+        var tv = new Tv("bedroom");
+
+
+        invoker.ExecuteCommand(new LightOnCommand(livingLight));
+        invoker.ExecuteCommand(new DoorOpenCommand(door));
+        invoker.ExecuteCommand(new IncreaseTempCommand(thermostat, 2));
+        invoker.ExecuteCommand(new TvOnCommand(tv));
+
+
+        invoker.UndoLast();
+        invoker.UndoLastN(2);
+        invoker.UndoLastN(5);
+
+
+        var tea = new Tea();
+        tea.PrepareRecipe();
+
+
+        var coffee = new Coffee("y");
+        coffee.PrepareRecipe();
+
+
+        var hotChocolate = new HotChocolate();
+        hotChocolate.PrepareRecipe();
+
+
+        var room = new ChatRoom();
+        var alice = new User("alice");
+        var bob = new User("bob");
+        var charlie = new User("charlie");
+
+
+        room.Register(alice);
+        room.Register(bob);
+
+
+        alice.Send("hello everyone");
+        bob.Send("hi alice");
+
+
+        room.SendPrivate("this is private", bob, "alice");
+
+
+        room.Register(charlie);
+        charlie.Send("i joined");
+
+
+        room.Unregister(bob);
+        bob.Send("am i still here?");
+    }
+}
